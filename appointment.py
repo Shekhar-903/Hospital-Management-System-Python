@@ -1,32 +1,48 @@
 from database import connect_db
+from utils import *
 
 def book_appointment():
-    patient_id = int(input("Patient ID: "))
-    doctor_id = int(input("Doctor ID: "))
-    date = input("Appointment Date (YYYY-MM-DD): ")
-
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute(
+    cur = conn.cursor()
+
+    pid = get_valid_int("Patient ID: ")
+    cur.execute("SELECT * FROM patient WHERE patient_id=?", (pid,))
+    if not cur.fetchone():
+        print("❌ Patient not found.")
+        conn.close()
+        return
+
+    did = get_valid_int("Doctor ID: ")
+    cur.execute("SELECT * FROM doctor WHERE doctor_id=?", (did,))
+    if not cur.fetchone():
+        print("❌ Doctor not found.")
+        conn.close()
+        return
+
+    date = get_valid_date()
+    cur.execute(
         "INSERT INTO appointment (patient_id, doctor_id, date) VALUES (?, ?, ?)",
-        (patient_id, doctor_id, date)
+        (pid, did, date)
     )
     conn.commit()
     conn.close()
-    print("📅 Appointment booked successfully")
+    print("📅 Appointment booked.")
 
 def view_appointments():
     conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("""
-    SELECT appointment.appointment_id, patient.name, doctor.name, appointment.date
-    FROM appointment
-    JOIN patient ON appointment.patient_id = patient.patient_id
-    JOIN doctor ON appointment.doctor_id = doctor.doctor_id
+    cur = conn.cursor()
+    cur.execute("""
+    SELECT a.appointment_id, p.name, d.name, a.date
+    FROM appointment a
+    JOIN patient p ON a.patient_id = p.patient_id
+    JOIN doctor d ON a.doctor_id = d.doctor_id
     """)
-    rows = cursor.fetchall()
+    rows = cur.fetchall()
     conn.close()
 
-    print("\n--- Appointments ---")
+    if not rows:
+        print("⚠️ No appointments found.")
+        return
+
     for row in rows:
         print(row)

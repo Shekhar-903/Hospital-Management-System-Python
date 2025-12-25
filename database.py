@@ -5,12 +5,12 @@ def connect_db():
 
 def create_tables():
     conn = connect_db()
-    cursor = conn.cursor()
+    cur = conn.cursor()
 
-    cursor.execute("""
+    cur.execute("""
     CREATE TABLE IF NOT EXISTS patient (
         patient_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
+        name TEXT NOT NULL,
         age INTEGER,
         gender TEXT,
         disease TEXT,
@@ -18,15 +18,15 @@ def create_tables():
     )
     """)
 
-    cursor.execute("""
+    cur.execute("""
     CREATE TABLE IF NOT EXISTS doctor (
         doctor_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
+        name TEXT NOT NULL,
         specialization TEXT
     )
     """)
 
-    cursor.execute("""
+    cur.execute("""
     CREATE TABLE IF NOT EXISTS appointment (
         appointment_id INTEGER PRIMARY KEY AUTOINCREMENT,
         patient_id INTEGER,
